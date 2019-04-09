@@ -1,8 +1,8 @@
-version: '2'
+version: '2.1'
 
 services:
   mailman-core:
-    image: maxking/mailman-core:0.2
+    image: maxking/mailman-core:latest
     container_name: mailman-core
     hostname: mailman-core
     volumes:
@@ -12,17 +12,17 @@ services:
     - database:database
     depends_on:
     - database
+    - postfix
     environment:
-    - DATABASE_URL=postgres://mailman:mailmanpass@database/mailmandb
-    - DATABASE_TYPE=postgres
-    - DATABASE_CLASS=mailman.database.postgresql.PostgreSQLDatabase
-    - HYPERKITTY_API_KEY=someapikey
+    - DATABASE_CLASS=mailman.database.mysql.MySQLDatabase
+    - DATABASE_TYPE=mysql
+    - DATABASE_URL=mysql+pymysql://root:crimson@database/mailmandb
     networks:
       mailman:
         ipv4_address: 172.19.199.2
 
   mailman-web:
-    image: maxking/mailman-web:0.2
+    image: maxking/mailman-web:latest
     container_name: mailman-web
     hostname: mailman-web
     depends_on:
@@ -33,25 +33,40 @@ services:
     volumes:
     - /opt/mailman/web:/opt/mailman-web-data
     environment:
-    - DATABASE_TYPE=postgres
-    - DATABASE_URL=postgres://mailman:mailmanpass@database/mailmandb
-    - HYPERKITTY_API_KEY=someapikey
+    - DATABASE_TYPE=mysql
+    - DATABASE_URL=mysql://root:crimson@database/mailmandb
+    - DYLD_LIBRARY_PATH=/usr/local/mysql/lib/
+    - UWSGI_STATIC_MAP=/static=/opt/mailman-web-data/static
     networks:
       mailman:
         ipv4_address: 172.19.199.3
 
-  database:
+  postfix:
+    container_name: postfix
+    image: cs50/postfix
+    networks:
+      mailman:
+        ipv4_address: 172.19.199.5
     environment:
-      POSTGRES_DB: mailmandb
-      POSTGRES_USER: mailman
-      POSTGRES_PASSWORD: mailmanpass
-    restart: always
-    image: postgres:9.6-alpine
+    - SERVER_NAME=email-smtp.us-east-1.amazonaws.com
+    - SERVER_PORT=587
     volumes:
-    - /opt/mailman/database:/var/lib/postgresql/data
+    - /opt/mailman/core:/opt/mailman/core
+
+  database:
+    container_name: mailman-database
+    image: cs50/mysql
+    environment: 
+    - MYSQL_DATABASE=mailmandb
+    - MYSQL_ROOT_PASSWORD=crimson
+    restart: always
     networks:
       mailman:
         ipv4_address: 172.19.199.4
+    healthcheck:
+      interval: 5s
+      retries: 60
+      test: mysqladmin -uroot -pcrimson ping
 
 networks:
    mailman:
