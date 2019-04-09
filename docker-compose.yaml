@@ -36,6 +36,7 @@ services:
     - DATABASE_TYPE=mysql
     - DATABASE_URL=mysql://root:crimson@database/mailmandb
     - DYLD_LIBRARY_PATH=/usr/local/mysql/lib/
+    - SERVER_FROM_DOMAIN=lists.cs50.harvard.edu
     - UWSGI_STATIC_MAP=/static=/opt/mailman-web-data/static
     networks:
       mailman:
@@ -52,6 +53,8 @@ services:
     - SERVER_PORT=587
     volumes:
     - /opt/mailman/core:/opt/mailman/core
+    ports:
+    - "25:25"
 
   database:
     container_name: mailman-database
@@ -63,6 +66,8 @@ services:
     networks:
       mailman:
         ipv4_address: 172.19.199.4
+    volumes:
+    - /opt/mailman/database:/var/lib/mysql
     healthcheck:
       interval: 5s
       retries: 60
