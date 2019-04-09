@@ -36,7 +36,7 @@ services:
     - DATABASE_TYPE=mysql
     - DATABASE_URL=mysql://root:crimson@database/mailmandb
     - DYLD_LIBRARY_PATH=/usr/local/mysql/lib/
-    - SERVER_FROM_DOMAIN=lists.cs50.harvard.edu
+    - SERVE_FROM_DOMAIN=lists.cs50.harvard.edu
     - UWSGI_STATIC_MAP=/static=/opt/mailman-web-data/static
     networks:
       mailman:
