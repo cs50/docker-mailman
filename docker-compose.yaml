@@ -16,7 +16,7 @@ services:
     environment:
     - DATABASE_CLASS=mailman.database.mysql.MySQLDatabase
     - DATABASE_TYPE=mysql
-    - DATABASE_URL=mysql+pymysql://root:crimson@database/mailmandb
+    - DATABASE_URL=mysql://root:crimson@database/mailmandb
     networks:
       mailman:
         ipv4_address: 172.19.199.2
