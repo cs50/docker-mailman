@@ -22,9 +22,8 @@ RUN postconf -e \
     "mydomain = lists.cs50.harvard.edu" \
     "myhostname = lists.cs50.harvard.edu" \
     "mynetworks_style = subnet" \
-    "relayhost = mailhub.harvard.edu:587" && \
+    "relayhost = relay.huit.harvard.edu:25" && \
     postconf -X mynetworks
 
-ENTRYPOINT service postfix start && \
-    service rsyslog start && \
-    tail -f /var/log/mail.log
+CMD service rsyslog start && \
+    postfix start-fg
