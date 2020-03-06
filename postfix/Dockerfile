@@ -9,9 +9,6 @@ RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 
 # Configure postfix
 RUN postconf -e \
-    "smtp_sasl_auth_enable = yes" \
-    "smtp_sasl_security_options = noanonymous" \
-    "smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd" \
     "smtp_use_tls = yes" \
     "smtp_tls_security_level = encrypt" \
     "smtp_tls_note_starttls_offer = yes" \
@@ -24,16 +21,10 @@ RUN postconf -e \
     "relay_domains = regexp:/opt/mailman/core/var/data/postfix_domains" \
     "mydomain = lists.cs50.harvard.edu" \
     "myhostname = lists.cs50.harvard.edu" \
-    "mynetworks_style = subnet" && \
+    "mynetworks_style = subnet" \
+    "relayhost = mailhub.harvard.edu:587" && \
     postconf -X mynetworks
 
-ENTRYPOINT \
-    postconf -e "relayhost = [$SES_SERVER_NAME]:$SES_SERVER_PORT" && \
-    echo "[$SES_SERVER_NAME]:$SES_SERVER_PORT $SES_USERNAME:$SES_PASSWORD" > /etc/postfix/sasl_passwd && \
-    postmap hash:/etc/postfix/sasl_passwd && \
-    chown root:root /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db && \
-    chmod 600 /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db && \
-    service postfix start && \
+ENTRYPOINT service postfix start && \
     service rsyslog start && \
-    postfix reload && \
     tail -f /var/log/mail.log
