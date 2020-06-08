@@ -25,5 +25,7 @@ RUN postconf -e \
     "relayhost = relay.huit.harvard.edu:25" && \
     postconf -X mynetworks
 
-CMD service rsyslog start && \
+CMD cp /etc/resolv.conf /var/spool/postfix/etc/ && \
+    cp /etc/services /var/spool/postfix/etc/ && \
+    service rsyslog start && \
     postfix start-fg
